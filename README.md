@@ -1,4 +1,6 @@
 # MGM
-simple mgm dcop solver written in Java
 
-Hard coded a Graph coloring problem
+Simple DCOP(Distributed Constrained Optimization Problems) solver using MGM (Maxmimum Gain Message) algorithm written in Java.\
+
+1, Currently hard coded with a graph coloring problem.\
+2, Spwan mutiple threads.
