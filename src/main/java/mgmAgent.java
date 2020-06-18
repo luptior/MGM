@@ -38,15 +38,14 @@ public class mgmAgent implements Runnable {
     private final int PORT;
 
 
-    public mgmAgent (String name,
+    public mgmAgent(String name,
                     int id,
                     ArrayList<String> domain,
                     String mode,
                     int cycle_limit,
                     ArrayList<String> neighbors,
                     int port,
-                    HashMap<String, Integer> neighborsPorts)
-    {
+                    HashMap<String, Integer> neighborsPorts) {
         this.name = name;
         this.ID = id;
         this.status = "value"; // gain/value
@@ -83,20 +82,19 @@ public class mgmAgent implements Runnable {
         // wait a second for the thread to start before msgs are sent
         try {
             TimeUnit.SECONDS.sleep(1);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         // triger the whole process with first message
-        if (cycle_count==0) {
+        if (cycle_count == 0) {
             // delay the sending to make sure all thread has been initialized
             sendValueMessage();
         }
 
     }
 
-    class MessageHandler implements Runnable
-    {
+    class MessageHandler implements Runnable {
         // Very simple calss for taking in the value and store it in the received
 
         final DataInputStream dis;
@@ -143,10 +141,8 @@ public class mgmAgent implements Runnable {
     }
 
 
-
     // ClientHandler class
-    class ClientHandler implements Runnable
-    {
+    class ClientHandler implements Runnable {
 
         public void run() {
             ServerSocket ss;
@@ -162,7 +158,7 @@ public class mgmAgent implements Runnable {
 
                 // running infinite loop for getting
                 // client request
-                while ( cycle_count < cycle_limit) {
+                while (cycle_count < cycle_limit) {
                     Socket s = null;
                     HashMap<String, String> pMsg = new HashMap<>();
 
@@ -189,7 +185,7 @@ public class mgmAgent implements Runnable {
 
                         // System.out.println(status + pMsg);
 
-                        if (pMsg.get("type").equals("value")){
+                        if (pMsg.get("type").equals("value")) {
                             neighborsNewValues.put(pMsg.get("origin"), pMsg.get("value"));
                             if (cycle_count == 0) {
                                 neighborsValues.put(pMsg.get("origin"), pMsg.get("value"));
@@ -200,7 +196,7 @@ public class mgmAgent implements Runnable {
                             if (status.equals("value")) {
                                 handleValueMessage();
                             }
-                        }else if (pMsg.get("type").equals("gain")){
+                        } else if (pMsg.get("type").equals("gain")) {
                             neighborsGains.put(pMsg.get("origin"), Float.parseFloat(pMsg.get("value")));
                             if (status.equals("gain")) {
                                 handleGainMesssage();
@@ -217,7 +213,7 @@ public class mgmAgent implements Runnable {
                         }
                     }
                 }
-                System.out.println("AGENT: "+name+" value: " + currentValue + " utility: " + currentUtility);
+                System.out.println("AGENT: " + name + " value: " + currentValue + " utility: " + currentUtility);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -245,11 +241,11 @@ public class mgmAgent implements Runnable {
         return this.currentValue;
     }
 
-    public void sendValueMessage(){
+    public void sendValueMessage() {
         // send the current value to all its beighbors
 
         for (String n : neighbors) {
-            String toSend = name+"/"+n+"/value/"+this.currentValue;
+            String toSend = name + "/" + n + "/value/" + this.currentValue;
             sendMsg(neighborsPorts.get(n), toSend);
         }
         // System.out.println("In cycle:"+ cycle_count + ", "+ name + " value " + currentValue+ " sent to "+ neighbors);
@@ -261,11 +257,11 @@ public class mgmAgent implements Runnable {
     }
 
 
-    public void sendGainMessage(){
+    public void sendGainMessage() {
         // send the current gain to all agents in neighbor list
 
         for (String n : neighbors) {
-            String toSend = name+"/"+n+"/gain/"+this.gain;
+            String toSend = name + "/" + n + "/gain/" + this.gain;
             sendMsg(neighborsPorts.get(n), toSend);
         }
         //System.out.println("In cycle:"+ cycle_count + ", "+ name + " gain:" +this.gain+" sent to "+ neighbors);
@@ -281,13 +277,13 @@ public class mgmAgent implements Runnable {
 //        }
 //    }
 
-    public void handleValueMessage(){
+    public void handleValueMessage() {
         // when all values updates have been received
         // given the new context received in this.neighborsNewValues
         // gain and newValue has been set by findOptAssignment()
-        if(neighborsNewValues.size() == neighbors.size()){
+        if (neighborsNewValues.size() == neighbors.size()) {
             this.status = "gain";
-            this.neighborsValues = (HashMap<String, String>)neighborsNewValues.clone();
+            this.neighborsValues = (HashMap<String, String>) neighborsNewValues.clone();
             //System.out.println("Status change: Agent " + name + " starts handling gain");
             findOptValue();
             sendGainMessage();
@@ -295,42 +291,42 @@ public class mgmAgent implements Runnable {
 
     }
 
-    public void handleGainMesssage(){
+    public void handleGainMesssage() {
         // when all gain updates have been received
         // given the new context received in this.neighborsNewValues
         // gain and newValue has been set by findOptAssignment()
 
         // System.out.println("Agent: " + name + " " + neighborsGains);
-        if (neighborsGains.size() == neighbors.size()){
+        if (neighborsGains.size() == neighbors.size()) {
 
             HashMap<String, Float> allGains;
             allGains = (HashMap<String, Float>) neighborsGains.clone();
             allGains.put(this.name, this.gain);
 
-            if(this.optMode.equals("max")){
+            if (this.optMode.equals("max")) {
 
                 String maxNeighbour = Collections.max(allGains.entrySet(), Map.Entry.comparingByValue()).getKey();
-                if (maxNeighbour.equals(this.name)){
+                if (maxNeighbour.equals(this.name)) {
                     // if the max gain is current agent
-                        this.currentValue = this.newValue;
-                        this.currentUtility += this.gain;
-                        // sendValueMessage();
+                    this.currentValue = this.newValue;
+                    this.currentUtility += this.gain;
+                    // sendValueMessage();
                 }
 
-            }else if(this.optMode.equals("min")){
+            } else if (this.optMode.equals("min")) {
 
                 String minNeighbour = Collections.min(allGains.entrySet(), Map.Entry.comparingByValue()).getKey();
-                if (minNeighbour.equals(this.name)){
+                if (minNeighbour.equals(this.name)) {
                     this.currentValue = this.newValue;
                     this.currentUtility += this.gain;
                 }
 
-            }else{
+            } else {
                 System.out.println("Optimization Mode is not supporteds");
             }
 
-            System.out.println("In cycle: "+ (cycle_count) + " agent: "+name+" neighbors: " + neighborsValues
-                    +" current ultility: " + (this.currentUtility-this.gain) + " gain: "+this.gain) ;
+            System.out.println("In cycle: " + (cycle_count) + " agent: " + name + " neighbors: " + neighborsValues
+                    + " current ultility: " + (this.currentUtility - this.gain) + " gain: " + this.gain);
 
             this.neighborsGains = new HashMap<>();
             // change status
@@ -343,7 +339,7 @@ public class mgmAgent implements Runnable {
         }
     }
 
-    private static float evaluateValue(String agent1, String val1, String agent2, String val2){
+    private static float evaluateValue(String agent1, String val1, String agent2, String val2) {
         // compare the utility given that this agent choose val1 and agent2 choose val2
 
         // return agentUtilityMap.get(val1).get(agent2).get(val2);
@@ -353,12 +349,12 @@ public class mgmAgent implements Runnable {
         int val = 0;
 
 
-        if( (agent1.equals("a1") && agent2.equals("a2") || agent1.equals("a2") && agent2.equals("a1"))
-                && val1.equals(val2)){
+        if ((agent1.equals("a1") && agent2.equals("a2") || agent1.equals("a2") && agent2.equals("a1"))
+                && val1.equals(val2)) {
             val += 10;
         }
-        if( (agent1.equals("a3") && agent2.equals("a2") || agent1.equals("a2") && agent2.equals("a3"))
-                && val1.equals(val2)){
+        if ((agent1.equals("a3") && agent2.equals("a2") || agent1.equals("a2") && agent2.equals("a3"))
+                && val1.equals(val2)) {
             val += 10;
         }
 
@@ -366,10 +362,10 @@ public class mgmAgent implements Runnable {
 
     }
 
-    private float evaluateRelations(String value){
+    private float evaluateRelations(String value) {
         float val = 0;
 
-        for (String n: neighbors ){
+        for (String n : neighbors) {
             val += evaluateValue(this.name, value, n, neighborsValues.get(n));
         }
 
@@ -377,25 +373,25 @@ public class mgmAgent implements Runnable {
 
     }
 
-    private static float evaluateExtensional(String name, String val1){
+    private static float evaluateExtensional(String name, String val1) {
         float val = 0;
 
-        if (name.equals("a1")){
-            if (val1.equals("R")){
+        if (name.equals("a1")) {
+            if (val1.equals("R")) {
                 val -= 0.1;
-            }else{
+            } else {
                 val += 0.1;
             }
-        }else if (name.equals("a2")){
-            if (val1.equals("R")){
+        } else if (name.equals("a2")) {
+            if (val1.equals("R")) {
                 val += 0.1;
-            }else{
+            } else {
                 val -= 0.1;
             }
-        }else if (name.equals("a3")){
-            if (val1.equals("R")){
+        } else if (name.equals("a3")) {
+            if (val1.equals("R")) {
                 val += 0.1;
-            }else{
+            } else {
                 val -= 0.1;
             }
         }
@@ -403,32 +399,32 @@ public class mgmAgent implements Runnable {
         return val;
     }
 
-    private void findOptValue(){
+    private void findOptValue() {
         // find the best value in dcop domain based on current context
         // returns the best assignment and store in this.gain
-        float bestSoFar =this.currentUtility ;
+        float bestSoFar = this.currentUtility;
 
-        for (String val : dcopDomain){
+        for (String val : dcopDomain) {
             float newUtility = evaluateExtensional(this.name, val);
             newUtility += evaluateRelations(val);
-            System.out.println("agent: "+ name + " value:" + val + " u:" + newUtility);
+            System.out.println("agent: " + name + " value:" + val + " u:" + newUtility);
             //System.out.println("New Utility is" + newUtility + "current" + this.currentUtility);
             if (newUtility > bestSoFar && this.optMode.equals("max") ||
-                    newUtility < bestSoFar && this.optMode.equals("min")){
+                    newUtility < bestSoFar && this.optMode.equals("min")) {
                 this.newValue = val;
                 bestSoFar = newUtility;
-            }else{
+            } else {
                 this.newValue = this.currentValue;
             }
         }
 
         this.gain = bestSoFar - this.currentUtility;
 
-        System.out.println("Agent " + name +" current ultility: " + (this.currentUtility) + " gain: "+this.gain + " neighbors " + neighborsValues) ;
+        System.out.println("Agent " + name + " current ultility: " + (this.currentUtility) + " gain: " + this.gain + " neighbors " + neighborsValues);
 
     }
 
-    private static HashMap<String, String> parseMsg(String msg){
+    private static HashMap<String, String> parseMsg(String msg) {
         // Msg : "orginAgentID-type-value"
         HashMap<String, String> reformatted_msg = new HashMap<>();
         String[] msg_parts = msg.split("/");
@@ -439,9 +435,8 @@ public class mgmAgent implements Runnable {
         return reformatted_msg;
     }
 
-    public void sendMsg(int port, String msg){
-        try
-        {
+    public void sendMsg(int port, String msg) {
+        try {
             // getting localhost ip
             InetAddress ip = InetAddress.getByName("localhost");
 
@@ -461,7 +456,7 @@ public class mgmAgent implements Runnable {
 
             dis.close();
             dos.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

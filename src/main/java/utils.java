@@ -2,17 +2,17 @@ import java.util.HashMap;
 
 public class utils {
 
-    public static HashMap<String, String> dictDecopose(String dict){
+    public static HashMap<String, String> dictDecopose(String dict) {
 
         String[] msg_parts = dict.split(",");
 
-        HashMap<String, String> re_dict= new HashMap<>();
+        HashMap<String, String> re_dict = new HashMap<>();
 
         String key;
         String value;
 
 
-        for (String m : msg_parts){
+        for (String m : msg_parts) {
 //            string.replaceAll("^\"|\"$", "");
             key = m.split(":")[0]
                     .replace(" ", "")
