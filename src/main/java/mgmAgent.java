@@ -9,6 +9,8 @@ import java.net.*;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import jade.core.Agent;
+
 public class mgmAgent implements Runnable {
 
     private final String name;
