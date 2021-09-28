@@ -1,5 +1,7 @@
 # MGM
 
+Not longer maintained, please see updated version in Kotlin https://github.com/luptior/MGM_Kotlin
+
 Simple DCOP(Distributed Constrained Optimization Problems) solver using MGM (Maxmimum Gain Message) algorithm written in Java/Kotlin.
 
 1, Currently hard coded with a graph coloring problem.\
